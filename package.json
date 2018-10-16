@@ -1,0 +1,26 @@
+{
+  "name": "pairio",
+  "version": "0.1.0",
+  "description": "Stateless procedure database",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/magland/pairio.git"
+  },
+  "author": "Jeremy Magland",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/magland/pairio/issues"
+  },
+  "homepage": "https://github.com/magland/pairio#readme",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "cors": "^2.8.4",
+    "crypto": "^1.0.1",
+    "express": "^4.16.4",
+    "request": "^2.88.0"
+  }
+}

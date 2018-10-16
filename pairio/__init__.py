@@ -1,0 +1,1 @@
+from .pairioclient import PairioClient, getLocal, setLocal
