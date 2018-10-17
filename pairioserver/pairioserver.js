@@ -89,6 +89,8 @@ const MongoClient = require('mongodb').MongoClient;
 const crypto = require('crypto');
 
 const default_max_num_pairs=10000;
+const MAX_KEY_LENGTH=40;
+const MAX_VALUE_LENGTH=40;
 
 function PairioServer(API) {
   this.app = function() {
@@ -104,6 +106,12 @@ function PairioServer(API) {
   // API /get/:user/:key
   m_app.get('/get/:user/:key', async function(req, res) {
     let params = req.params;
+    if (params.key.length>MAX_KEY_LENGTH) {
+      res.json({
+        success:false,
+        error:'Invalid key'
+      });
+    }
     try {
       obj = await API.get(params.user,params.key);
     }
@@ -121,6 +129,12 @@ function PairioServer(API) {
   // API /set/:user/:key/:value
   m_app.get('/set/:user/:key/:value', async function(req, res) {
     let params = req.params;
+    if ((params.key.length>MAX_KEY_LENGTH)||(params.value.length>MAX_VALUE_LENGTH)) {
+      res.json({
+        success:false,
+        error:'Invalid key'
+      });
+    }
     let query = req.query;
     if (!query.signature) {
       res.json({
@@ -283,17 +297,11 @@ function PairioServer(API) {
   async function verify_user_signature(user,path,signature) {
     let info=await API.DB.getUserInfo(user);
     if (!info) return false;
-    if (test_signature) {
-      if (signature==test_signature) return true;
-    }
     if (!info.token) return false;
     let sig=sha1_of_object({path:path,token:info.token});
     return (signature==sig);
   }
   async function verify_admin_signature(path,signature) {
-    if (test_signature) {
-      if (signature==test_signature) return true;
-    }
     let admin_token=process.env.PAIRIO_ADMIN_TOKEN;
     if (!admin_token) {
       console.warn('Warning: PAIRIO_ADMIN_TOKEN not set');
