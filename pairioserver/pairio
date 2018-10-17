@@ -4,7 +4,8 @@ require('dotenv').config({ path: __dirname+'/../.env' });
 
 const axios=require('axios');
 const crypto=require('crypto');
-let pairio_url=process.env.PAIRIO_URL||'http://localhost:25340';
+//let pairio_url=process.env.PAIRIO_URL||'http://localhost:25340';
+let pairio_url=process.env.PAIRIO_URL||'http://pairio.org:8080';
 
 function print_usage() {
   console.info('Usage:');
