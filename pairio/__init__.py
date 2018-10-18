@@ -1,1 +1,1 @@
-from .pairio import get, set, setConfig
+from .pairioclient import PairioClient, client
