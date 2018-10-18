@@ -61,20 +61,20 @@ Here, the value is the SHA-1 hash of the file whose contents is "Hello, pairio."
 
 ## Looking up values in the cloud
 
-Values can be retrieved from the cloud by configuring pairio to look for pairs stored under pairio user accounts. For example, to retrieve the value associated with the dict `{'name','test'}` in the 'magland' cloud collection, do
+Values can be retrieved from the cloud by configuring pairio to look for pairs stored under pairio user accounts. For example, to retrieve the value associated with the dict `{'name':'test'}` in the 'magland' cloud collection, do
 
 ```
-val=pairio.get({'name','test'},user='magland')
+val=pairio.get({'name':'test'},user='magland',local=False)
 print(val)
 ```
 
-If found, you might see the "result of test", depending on what is actually in the database.
+If found, you might see the "a-test-string", depending on what is actually in the database. If not found, you will see `None`.
 
 This can also be achieved by configuring pairio to always look for key/value pairs under the 'magland' cloud collection
 
 ```
 pairio.setConfig(users=['magland'])
-val=pairio.get({'name','test'})
+val=pairio.get({'name':'test'},local=False)
 print(val)
 ```
 
@@ -90,7 +90,7 @@ pairio.setConfig(user='your-user-name',token='your-pairio-token')
 
 Then subsequent calls to `pairio.set()` will set the key/value pairs to both the local machine and to the remote cloud collection associated with your user name.
 
-## Other configuration options
+## Configuration options
 
 You can specify the default behavior of the `pairio.get()` and `pairio.set()` operations as follows:
 
@@ -107,5 +107,7 @@ pairio.setConfig(
 
 ## Hosting a pairio server
 
-You can host your own pairio server. The source code for the NodeJS server is found in the `pairioserver/` directory. TODO: finish this section.
+You can host your own pairio server. The source code for the NodeJS server is found in the `pairioserver/` directory.
+
+TODO: finish this section.
 
