@@ -15,9 +15,16 @@ class Test001(unittest.TestCase):
         pass
      
     def test_001(self):
-      pairio.setLocal('test','val')
-      val=pairio.getLocal('test')
-      # todo assert val='val'
+      key0='testkey'
+      val0='testval000'
+      pairio.set(key0,val0)
+      val=pairio.get(key0)
+      self.assertEqual(val,val0)
+      pairio.set(key0,val0+'abc')
+      val=pairio.get(key0)
+      self.assertEqual(val,val0+'abc')
+
+
  
 if __name__ == '__main__':
     unittest.main()
