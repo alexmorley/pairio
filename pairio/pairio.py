@@ -17,7 +17,7 @@ def _get_default_local_db_fname():
 _config=dict(
     user='',
     token='',
-    trusted_users=[],
+    users=[],
     admin_token='',
     url=os.getenv('PAIRIO_URL'),
     local_database_path=_get_default_local_db_fname(),
@@ -31,7 +31,7 @@ if not _config['url']:
 def setConfig(*,
               user=None,
               token=None,
-              trusted_users=None,
+              users=None,
               admin_token=None,
               url=None,
               local_database_path=None,
@@ -42,8 +42,8 @@ def setConfig(*,
         _config['user']=user
     if token is not None:
         _config['token']=token
-    if trusted_users is not None:
-        _config['trusted_users']=trusted_users
+    if users is not None:
+        _config['users']=users
     if admin_token is not None:
         _config['admin_token']=admin_token
     if url is not None:
@@ -57,18 +57,18 @@ def setConfig(*,
             
 def get(
     key,
+    user=None,
     local=None,
     remote=None,
-    trusted_users=None
+    users=None
 ):
-    user=_config['user']
     url=_config['url']
     if local is None:
         local=_config['local']
     if remote is None:
         remote=_config['remote']
-    if trusted_users is None:
-        trusted_users=_config['trusted_users']
+    if users is None:
+        users=_config['users']
         
     key=_filter_key(key)
     if local:
@@ -77,17 +77,19 @@ def get(
             return val
         
     if remote:
-        all_users=trusted_users
-        if user:
-            if not user in all_users:
-                all_users.append(user)
+        if user is not None:
+            all_users=[user]
+        else:
+            all_users=users
+            if _config['user']:
+                if not _config['user'] in all_users:
+                    all_users.append(_config['user'])
         for user0 in all_users:
             path='/get/{}/{}'.format(user0,key)
             url0=url+path
             obj=_http_get_json(url0)
             if obj['success']:
                 return obj['value']
-    
     return None
     
 def set(
