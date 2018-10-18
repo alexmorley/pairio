@@ -61,10 +61,10 @@ Here, the value is the SHA-1 hash of the file whose contents is "Hello, pairio."
 
 ## Looking up values in the cloud
 
-Values can be retrieved from the cloud by configuring pairio to look for pairs stored under pairio user accounts. For example, to retrieve the value associated with the dict `{'name','test'}` in the 'magland' cloud collection, do
+Values can be retrieved from the cloud by configuring pairio to look for pairs stored under pairio user accounts. For example, to retrieve the value associated with the dict `{'name':'test'}` in the 'magland' cloud collection, do
 
 ```
-val=pairio.get({'name','test'},user='magland')
+val=pairio.get({'name':'test'},user='magland')
 print(val)
 ```
 
@@ -74,7 +74,7 @@ This can also be achieved by configuring pairio to always look for key/value pai
 
 ```
 pairio.setConfig(users=['magland'])
-val=pairio.get({'name','test'})
+val=pairio.get({'name':'test'})
 print(val)
 ```
 
