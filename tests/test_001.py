@@ -5,7 +5,7 @@ def append_to_path(dir0): # A convenience function
     if dir0 not in sys.path:
         sys.path.append(dir0)
 append_to_path(os.getcwd()+'/..')
-import pairio
+from pairio import client as pa
  
 class Test001(unittest.TestCase):
     def setUp(self):
@@ -17,11 +17,11 @@ class Test001(unittest.TestCase):
     def test_001(self):
       key0='testkey'
       val0='testval000'
-      pairio.set(key0,val0)
-      val=pairio.get(key0)
+      pa.set(key0,val0)
+      val=pa.get(key0)
       self.assertEqual(val,val0)
-      pairio.set(key0,val0+'abc')
-      val=pairio.get(key0)
+      pa.set(key0,val0+'abc')
+      val=pa.get(key0)
       self.assertEqual(val,val0+'abc')
 
 
