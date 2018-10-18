@@ -111,3 +111,5 @@ You can host your own pairio server. The source code for the NodeJS server is fo
 
 TODO: finish this section.
 
+See server API docs at the top of this file: https://github.com/magland/pairio/blob/master/pairioserver/pairioserver.js
+
