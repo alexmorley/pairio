@@ -15,18 +15,15 @@ def _get_default_local_db_fname():
     return ret
 
 _config=dict(
-    user='',
-    token='',
+    user=os.getenv('PAIRIO_USER',''),
+    token=os.getenv('PAIRIO_TOKEN',''),
     users=[],
-    admin_token='',
-    url=os.getenv('PAIRIO_URL'),
+    admin_token=os.getenv('PAIRIO_ADMIN_TOKEN',''),
+    url=os.getenv('PAIRIO_URL','http://pairio.org:8080'),
     local_database_path=_get_default_local_db_fname(),
     local=True,
     remote=True
 )
-if not _config['url']:
-    #_config['url']='http://localhost:25340'
-    _config['url']='http://pairio.org:8080'
     
 def setConfig(*,
               user=None,
@@ -71,7 +68,7 @@ def get(
         users=_config['users']
         
     key=_filter_key(key)
-    if local:
+    if local and (not user):
         val=_get_local(key)
         if val:
             return val
