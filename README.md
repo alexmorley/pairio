@@ -51,7 +51,7 @@ result=pa.get({'operation':'add','arg1':12,'arg2':30})
 print(result)
 ```
 
-Often the val will not be a string, but will instead be the SHA-1 hash of a file. For example
+On primary use case is when the value is the SHA-1 hash of a file. For example
 
 ```
 pa.set({'operation':'bash-stdout','script':'echo "Hello, pairio."'},'a09fd13fd92800aeafe475e9113efe216788d934')
