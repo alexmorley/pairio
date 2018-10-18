@@ -1,6 +1,6 @@
 {
   "name": "pairio",
-  "version": "0.1.0",
+  "version": "0.1.9",
   "description": "Stateless procedure database",
   "main": "index.js",
   "scripts": {
