@@ -17,20 +17,20 @@ def _get_default_local_db_fname():
 class PairioClient():
     def __init__(self):
         self._config=dict(
-            user=os.getenv('PAIRIO_USER',''),
-            token=os.getenv('PAIRIO_TOKEN',''),
-            users=[],
-            admin_token=os.getenv('PAIRIO_ADMIN_TOKEN',''),
-            url=os.getenv('PAIRIO_URL','http://pairio.org:8080'),
-            local_database_path=_get_default_local_db_fname(),
-            local=True,
-            remote=True
+            user=os.getenv('PAIRIO_USER',''), # logged in user for setting remote pairs
+            token=os.getenv('PAIRIO_TOKEN',''), # token for logged in user
+            collections=[], # remote collections to search for get() when remote=True
+            admin_token=os.getenv('PAIRIO_ADMIN_TOKEN',''), # not used right now
+            url=os.getenv('PAIRIO_URL','http://pairio.org:8080'), # where the remote collections live
+            local_database_path=os.getenv('PAIRIO_DATABASE_DIR',_get_default_local_db_fname()), # for local pairs
+            local=True, # whether to get/set locally
+            remote=False # whether to get/set remotely
         )
     
     def setConfig(self,*,
                   user=None,
                   token=None,
-                  users=None,
+                  collections=None,
                   admin_token=None,
                   url=None,
                   local_database_path=None,
@@ -41,8 +41,8 @@ class PairioClient():
             self._config['user']=user
         if token is not None:
             self._config['token']=token
-        if users is not None:
-            self._config['users']=users
+        if collections is not None:
+            self._config['collections']=collections
         if admin_token is not None:
             self._config['admin_token']=admin_token
         if url is not None:
@@ -57,40 +57,45 @@ class PairioClient():
     def get(
         self,
         key,
-        user=None,
+        collection=None,
         local=None,
         remote=None,
-        users=None
+        return_collection=False
     ):
         url=self._config['url']
         if local is None:
             local=self._config['local']
         if remote is None:
             remote=self._config['remote']
-        if users is None:
-            users=self._config['users']
+        collections=self._config['collections']
             
         key=_filter_key(key)
-        if local and (not user):
+        if local and (not collection):
             val=self._get_local(key)
             if val:
-                return val
+                if not return_collection:
+                    return val
+                else:
+                    return (val,'[local]')
             
-        if remote:
-            if user is not None:
-                all_users=[user]
+        if (remote) or (collection is not None):
+            if collection is not None:
+                all_collections=[collection]
             else:
-                all_users=users
-                if self._config['user']:
-                    if not self._config['user'] in all_users:
-                        all_users.append(self._config['user'])
-            for user0 in all_users:
-                path='/get/{}/{}'.format(user0,key)
+                all_collections=collections
+            for collection0 in all_collections:
+                path='/get/{}/{}'.format(collection0,key)
                 url0=url+path
                 obj=_http_get_json(url0)
                 if obj['success']:
-                    return obj['value']
-        return None
+                    if not return_collection:
+                        return obj['value']
+                    else:
+                        return (obj['value'],collection0)
+        if not return_collection:
+            return None
+        else:
+            return (None,None)
 
     def set(
         self,
