@@ -17,14 +17,12 @@ def _get_default_local_db_fname():
 class PairioClient():
     def __init__(self):
         self._config=dict(
-            user=os.getenv('PAIRIO_USER',''), # logged in user for setting remote pairs
-            token=os.getenv('PAIRIO_TOKEN',''), # token for logged in user
-            collections=[], # remote collections to search for get() when remote=True
-            admin_token=os.getenv('PAIRIO_ADMIN_TOKEN',''), # not used right now
+            user='', # logged in user for setting remote pairs
+            token='', # token for logged in user
+            collections=[], # default remote collections to search for get()
             url=os.getenv('PAIRIO_URL','http://pairio.org:8080'), # where the remote collections live
             local_database_path=os.getenv('PAIRIO_DATABASE_DIR',_get_default_local_db_fname()), # for local pairs
-            local=True, # whether to get/set locally
-            remote=False # whether to get/set remotely
+            local=True # whether to get/set locally by default
         )
     
     def setConfig(self,*,
@@ -34,8 +32,7 @@ class PairioClient():
                   admin_token=None,
                   url=None,
                   local_database_path=None,
-                  local=None,
-                  remote=None
+                  local=None
                  ):
         if user is not None:
             self._config['user']=user
@@ -51,23 +48,20 @@ class PairioClient():
             self._config['local_database_path']=local_database_path
         if local is not None:
             self._config['local']=local
-        if remote is not None:
-            self._config['remote']=remote
         
     def get(
         self,
         key,
         collection=None,
         local=None,
-        remote=None,
+        collections=None,
         return_collection=False
     ):
         url=self._config['url']
         if local is None:
             local=self._config['local']
-        if remote is None:
-            remote=self._config['remote']
-        collections=self._config['collections']
+        if collections is None:
+            collections=self._config['collections']
             
         key=_filter_key(key)
         if local and (not collection):
@@ -78,20 +72,19 @@ class PairioClient():
                 else:
                     return (val,'[local]')
             
-        if (remote) or (collection is not None):
-            if collection is not None:
-                all_collections=[collection]
-            else:
-                all_collections=collections
-            for collection0 in all_collections:
-                path='/get/{}/{}'.format(collection0,key)
-                url0=url+path
-                obj=_http_get_json(url0)
-                if obj['success']:
-                    if not return_collection:
-                        return obj['value']
-                    else:
-                        return (obj['value'],collection0)
+        if collection is not None:
+            all_collections=[collection]
+        else:
+            all_collections=collections
+        for collection0 in all_collections:
+            path='/get/{}/{}'.format(collection0,key)
+            url0=url+path
+            obj=_http_get_json(url0)
+            if obj['success']:
+                if not return_collection:
+                    return obj['value']
+                else:
+                    return (obj['value'],collection0)
         if not return_collection:
             return None
         else:
@@ -102,27 +95,30 @@ class PairioClient():
         key,
         value,
         local=None,
-        remote=None
+        user=None,
+        token=None
     ):
-        user=self._config['user']
         url=self._config['url']
+        if user is None:
+            user=self._config['user']
+        if token is None:
+            token=self._config['token']
         if local is None:
             local=self._config['local']
-        if remote is None:
-            remote=self._config['remote']
+        if user is None:
+            user=self._config['user']
+        if token is None:
+            token=self._config['token']
         
         key=_filter_key(key)
         if local:
             self._set_local(key,value)
             
-        if remote:
-            if not user:
-                return
+        if user:
             if not url:
                 return
             path='/set/{}/{}/{}'.format(user,key,value)
             url0=url+path
-            token=self._config['token']
             if not token:
                 raise Exception('pairio token not set')
             signature=_sha1_of_object({'path':path,'token':token})
@@ -130,6 +126,18 @@ class PairioClient():
             obj=_http_get_json(url0)
             if not obj['success']:
                 raise Exception(obj['error'])
+
+    def getLocal(self,key):
+        return self.get(key=key,local=True,collections=[])
+
+    def setLocal(self,key,value):
+        self.set(key=key,value=value,local=True,user='')
+
+    def getRemote(self,key,*,collection=None):
+        return self.get(key=key,collection=collection,local=False)
+
+    def setRemote(self,key,value):
+        return self.set(key=key,value=value,local=False)
 
     def _get_local(self,key):
         local_database_path=self._config['local_database_path']
