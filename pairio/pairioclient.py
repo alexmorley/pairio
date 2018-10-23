@@ -3,7 +3,6 @@ import urllib
 import hashlib
 import os
 import pathlib
-import pickledb
 
 def _get_default_local_db_fname():
     dirname=str(pathlib.Path.home())+'/.pairio'
@@ -145,8 +144,8 @@ class PairioClient():
             return None
         hashed_key=_sha1_of_string(key)
         path=local_database_path+'/{}.db'.format(hashed_key[0:2])
-        db = pickledb.load(path, False)
-        doc=db.get(key)
+        db = _db_load(path)
+        doc=db.get(key,None)
         if doc:
             return doc['value']
         else:
@@ -158,10 +157,30 @@ class PairioClient():
             return
         hashed_key=_sha1_of_string(key)
         path=local_database_path+'/{}.db'.format(hashed_key[0:2])
-        db = pickledb.load(path, False)
+        db = _db_load(path)
         doc=dict(value=val)
-        db.set(key,doc)
-        db.dump()
+        db[key]=doc;
+        _db_save(path,db)
+
+## TODO: make the following thread-safe
+def _db_load(path):
+    try:
+        db=_read_json_file(path)
+    except:
+        db=dict()
+    return db
+
+## TODO: make the following thread-safe
+def _db_save(path,db):
+    _write_json_file(db,path)
+
+def _read_json_file(path):
+  with open(path) as f:
+    return json.load(f)
+
+def _write_json_file(obj,path):
+  with open(path,'w') as f:
+    return json.dump(obj,f)
         
 def _filter_key(key):
     if type(key)==str:
