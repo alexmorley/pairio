@@ -12,7 +12,6 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     package_data={},
     install_requires=[
-        'pickledb'
     ],
     classifiers=(
         "Programming Language :: Python :: 3",
