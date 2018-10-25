@@ -13,9 +13,12 @@ class PairioClient():
             collections=[], # default remote collections to search for get()
             url=os.getenv('PAIRIO_URL','http://pairio.org:8080'), # where the remote collections live
             local_database_path=os.getenv('PAIRIO_DATABASE_DIR',_get_default_local_db_fname()), # for local pairs
-            local=True, # whether to get/set locally by default
-            remote=True # whether to get/set remotely by default if user/token has been set
+            read_local=True, # whether to get locally by default
+            write_local=True, # whether to set locally by default
+            read_remote=True, # whether to get remotely by default if collections has been set
+            write_remote=True # whether to set remotely by default if user/token has been set
         )
+        self._verbose=False
     
     def setConfig(self,*,
                   user=None,
@@ -23,8 +26,11 @@ class PairioClient():
                   collections=None,
                   url=None,
                   local_database_path=None,
-                  local=None,
-                  remote=None
+                  read_local=None,
+                  write_local=None,
+                  read_remote=None,
+                  write_remote=None,
+                  verbose=None
                  ):
         if user is not None:
             if token is None:
@@ -40,10 +46,16 @@ class PairioClient():
             self._config['url']=url
         if local_database_path is not None:
             self._config['local_database_path']=local_database_path
-        if local is not None:
-            self._config['local']=local
-        if remote is not None:
-            self._config['remote']=remote
+        if read_local is not None:
+            self._config['read_local']=read_local
+        if write_local is not None:
+            self._config['write_local']=write_local
+        if read_remote is not None:
+            self._config['read_remote']=read_remote
+        if write_remote is not None:
+            self._config['write_remote']=write_remote
+        if verbose is not None:
+            self._verbose=verbose
 
         if user is not None:
             test_string=_random_string(6)
@@ -58,7 +70,7 @@ class PairioClient():
             if str2!=test_string:
                 raise Exception('pairio test failed for user={}. {}<>{}'.format(user,str2,test_string))
             else:
-                print('Pairio user set to {}. Test succeeded.'.format(user))
+                print ('Pairio user set to {}. Test succeeded.'.format(user))
 
     def getConfig(self):
         ret=self._config.copy()
@@ -77,9 +89,9 @@ class PairioClient():
     ):
         url=self._config['url']
         if local is None:
-            local=self._config['local']
+            local=self._config['read_local']
         if remote is None:
-            remote=self._config['remote']
+            remote=self._config['read_remote']
         if collections is None:
             collections=self._config['collections']
         if collection is not None:
@@ -102,7 +114,7 @@ class PairioClient():
             for collection0 in all_collections:
                 path='/get/{}/{}'.format(collection0,key)
                 url0=url+path
-                obj=_http_get_json(url0)
+                obj=self._http_get_json(url0)
                 if obj['success']:
                     if not return_collection:
                         return obj['value']
@@ -138,9 +150,9 @@ class PairioClient():
         if token is None:
             token=self._config['token']
         if local is None:
-            local=self._config['local']
+            local=self._config['write_local']
         if remote is None:
-            remote=self._config['remote']
+            remote=self._config['write_remote']
         if user is None:
             user=self._config['user']
         if token is None:
@@ -159,7 +171,7 @@ class PairioClient():
             url0=url+path
             signature=_sha1_of_object({'path':path,'token':token})
             url0=url0+'?signature={}'.format(signature)
-            obj=_http_get_json(url0)
+            obj=self._http_get_json(url0)
             if not obj['success']:
                 raise Exception(obj['error'])
     
@@ -196,6 +208,9 @@ class PairioClient():
         doc=dict(value=val)
         db[key]=doc;
         _db_save(path,db)
+
+    def _http_get_json(self,url):
+        return _http_get_json(url,verbose=self._verbose)
 
 def _get_default_local_db_fname():
     dirname=str(pathlib.Path.home())+'/.pairio'
@@ -234,7 +249,9 @@ def _filter_key(key):
         return _sha1_of_string(txt)
     raise Exception('Invalid type for key')
         
-def _http_get_json(url):
+def _http_get_json(url,verbose=False):
+    if verbose:
+      print ('_http_get_json::: '+url)
     try:
         req=urllib.request.urlopen(url)
     except:
@@ -243,6 +260,8 @@ def _http_get_json(url):
         ret=json.load(req)
     except:
         raise Exception('Unable to load json from url: '+url)
+    if verbose:
+      print ('done.')
     return ret
 
 def _sha1_of_string(txt):
