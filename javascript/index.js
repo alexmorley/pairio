@@ -8,7 +8,7 @@ const axios = require('axios');
 function PairioClient() {
 	let m_collections=[]; // default collections
 	let m_url='http://pairio.org:8080';
-	let m_verbose=true;
+	let m_verbose=false;
 
 	this.setConfig=function(config) {
 		if ('collections' in config) {
@@ -49,6 +49,9 @@ function PairioClient() {
 			}
 			catch(err) {
 				console.error('Error in get: '+err.message);
+			}
+			if (!obj) {
+				return null;
 			}
 			if (obj['success']) {
 				if (opts.return_collection) {
