@@ -228,7 +228,8 @@ class PairioClient():
                 doc=dict(value=val)
                 db[key]=doc;
             else:
-                del db[key]
+                if key in db:
+                    del db[key]
             _db_save(path,db)
         return True
 
