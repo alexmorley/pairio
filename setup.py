@@ -4,7 +4,7 @@ pkg_name="pairio"
 
 setuptools.setup(
     name=pkg_name,
-    version="0.2.5",
+    version="0.2.6",
     author="Jeremy Magland",
     author_email="jmagland@flatironinstitute.org",
     description="Python interface to pairio",
