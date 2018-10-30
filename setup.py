@@ -12,6 +12,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     package_data={},
     install_requires=[
+        "fasteners"
     ],
     classifiers=(
         "Programming Language :: Python :: 3",

@@ -405,6 +405,9 @@ function PairioDB() {
       throw new Error('Not connected to database');
     }
     let collection=m_db.collection("userpairs");
+    if (!value) {
+      await collection.remove({user:user,key:key});
+    }
     if (overwrite) {
       await collection.updateOne({user:user,key:key},{$set:{value: value}},{upsert:true});
     }

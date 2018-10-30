@@ -4,6 +4,7 @@ import hashlib
 import os
 import pathlib
 import random
+import fasteners
 
 class PairioClient():
     def __init__(self):
@@ -120,6 +121,7 @@ class PairioClient():
                         return obj['value']
                     else:
                         return (obj['value'],collection0)
+
         if not return_collection:
             return None
         else:
@@ -142,7 +144,8 @@ class PairioClient():
         local=None,
         remote=None,
         user=None,
-        token=None
+        token=None,
+        overwrite=None # default is True
     ):
         url=self._config['url']
         if user is None:
@@ -157,33 +160,43 @@ class PairioClient():
             user=self._config['user']
         if token is None:
             token=self._config['token']
+        if overwrite is None:
+            overwrite=True
         
         key=_filter_key(key)
         if local:
-            self._set_local(key,value)
+            if not self._set_local(key,value,overwrite=overwrite):
+                return False
             
         if remote and user:
             if not url:
                 raise Exception('Cannot set value to remote because no url has been set')
             if not token:
                 raise Exception('Cannot set value to remote because pairio token has not been set')
-            path='/set/{}/{}/{}'.format(user,key,value)
+            if value:
+                path='/set/{}/{}/{}'.format(user,key,value)
+            else:
+                path='/set/{}/{}/'.format(user,key)
             url0=url+path
             signature=_sha1_of_object({'path':path,'token':token})
             url0=url0+'?signature={}'.format(signature)
+            if overwrite is False:
+                url0=url0+'&overwrite=false'
             obj=self._http_get_json(url0)
             if not obj['success']:
-                raise Exception(obj['error'])
+                return False
+
+        return True
     
-    def setLocal(self,key,value):
+    def setLocal(self,key,value,overwrite=None):
         if not self._config['local_database_path']:
             raise Exception('Cannot write to local database because local_database_path has not been set')
-        self.set(key=key,value=value,user='',local=True,remote=False)
+        return self.set(key=key,value=value,user='',local=True,remote=False,overwrite=overwrite)
 
-    def setRemote(self,key,value):
+    def setRemote(self,key,value,overwrite=None):
         if not self._config['user']:
             raise Exception('Cannot write to remote database because user has not been set')
-        return self.set(key=key,value=value,local=False,remote=True)
+        return self.set(key=key,value=value,local=False,remote=True,overwrite=overwrite)
 
     def _get_local(self,key):
         local_database_path=self._config['local_database_path']
@@ -198,16 +211,26 @@ class PairioClient():
         else:
             return None
         
-    def _set_local(self,key,val):
+    def _set_local(self,key,val,overwrite=None):
+        if overwrite is None:
+            overwrite=True
         local_database_path=self._config['local_database_path']
         if not local_database_path:
             raise Exception('Cannot write to local database because local_database_path has not been set')
         hashed_key=_sha1_of_string(key)
         path=local_database_path+'/{}.db'.format(hashed_key[0:2])
-        db = _db_load(path)
-        doc=dict(value=val)
-        db[key]=doc;
-        _db_save(path,db)
+        with fasteners.InterProcessLock(path+'.lockfile'):
+            db = _db_load(path)
+            if overwrite is False:
+                if key in db:
+                    return False
+            if val:
+                doc=dict(value=val)
+                db[key]=doc;
+            else:
+                del db[key]
+            _db_save(path,db)
+        return True
 
     def _http_get_json(self,url):
         return _http_get_json(url,verbose=self._verbose)
