@@ -162,8 +162,11 @@ function PairioServer(API) {
         return;
       }
     }
+    let overwrite=true;
+    if (query.overwrite=='false')
+      overwrite=false;
     try {
-      obj = await API.set(params.user,params.key,params.value);
+      obj = await API.set(params.user,params.key,params.value,overwrite);
     }
     catch(err) {
       console.error(err);
@@ -335,9 +338,9 @@ function PairioApi(DB) {
     };
   };
 
-  this.set=async function(user,key,value) {
+  this.set=async function(user,key,value,overwrite) {
     //todo: check not to exceed max_num_pairs
-    await DB.setUserPair(user,key,value);
+    await DB.setUserPair(user,key,value,overwrite);
     return {success:true};
   };
 
@@ -397,12 +400,20 @@ function PairioDB() {
     if (docs.length!=1) return null;
     return docs[0];
   }
-  this.setUserPair=async function(user,key,value) {
+  this.setUserPair=async function(user,key,value,overwrite) {
     if (!m_db) {
       throw new Error('Not connected to database');
     }
     let collection=m_db.collection("userpairs");
-    collection.updateOne({user:user,key:key},{$set:{value: value}},{upsert:true});
+    if (overwrite) {
+      await collection.updateOne({user:user,key:key},{$set:{value: value}},{upsert:true});
+    }
+    else {
+      let tmp=await collection.updateOne({user:user,key:key},{$setOnInsert:{value: value}},{upsert:true});  
+      if (tmp.matchedCount>0) {
+        throw new Error('Key exists -- cannot overwrite.');
+      }
+    }
   }
   this.getUserInfo=async function(user) {
     if (!m_db) {

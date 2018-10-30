@@ -85,13 +85,16 @@ function handle_set() {
 	let path=`/set/${user}/${key}/${value}`;
 	let signature=sha1_of_object({path:path,token:token})
 	let url=pairio_url+`${path}?signature=${signature}`;
+	if (CLP.namedParameters['overwrite']=='false') {
+		url+='&overwrite=false';
+	}
 	http_get_json(url,function(err,obj) {
 		if (err) {
 			console.error(err.message);
 			process.exit(-1);
 		}
 		if (!obj.success) {
-			console.error(obj.error);
+			console.error('Error: '+obj.error);
 			process.exit(-1);
 		}
 		console.info(`Key/value has been set for user: ${user}`);
