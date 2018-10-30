@@ -466,7 +466,7 @@ function PairioDB() {
     if (!value) {
       await collection.remove({user:user,key:key});
     }
-    if (overwrite) {
+    else if (overwrite) {
       await collection.updateOne({user:user,key:key},{$set:{value: value}},{upsert:true});
     }
     else {
