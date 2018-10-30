@@ -176,7 +176,7 @@ class PairioClient():
             if value:
                 path='/set/{}/{}/{}'.format(user,key,value)
             else:
-                path='/set/{}/{}/'.format(user,key)
+                path='/remove/{}/{}'.format(user,key)
             url0=url+path
             signature=_sha1_of_object({'path':path,'token':token})
             url0=url0+'?signature={}'.format(signature)

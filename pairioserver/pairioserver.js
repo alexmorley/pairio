@@ -33,6 +33,24 @@ GET:/set/[user]/[key]/[value]?signature=[signature]
 
   and [token] is the secret token associated with the user.
 
+GET:/remove/[user]/[key]?signature=[signature]
+
+  Returns the JSON of the following object
+  {
+    success:[boolean:success],
+    error:[string:error]
+  }
+
+  where [signature] is the SHA-1 hash of the JSON string associated
+  with the object:
+
+  {
+      path:[path of GET request],
+      token:[token]
+  }
+
+  and [token] is the secret token associated with the user.
+
 To create an account on the server:
 
 GET:/admin/register/[new_user]?signature=[signature]
@@ -167,6 +185,46 @@ function PairioServer(API) {
       overwrite=false;
     try {
       obj = await API.set(params.user,params.key,params.value,overwrite);
+    }
+    catch(err) {
+      console.error(err);
+      res.json({
+        success:false,
+        error:err.message
+      });
+      return;
+    }
+    res.json(obj);
+  });
+
+  // API /remove/:user/:key
+  m_app.get('/remove/:user/:key', async function(req, res) {
+    let params = req.params;
+    if (params.key.length>MAX_KEY_LENGTH) {
+      res.json({
+        success:false,
+        error:'Invalid key'
+      });
+    }
+    let query = req.query;
+    if (!query.signature) {
+      res.json({
+        success:false,
+        error:'Missing query parameter: signature'
+      });
+      return;
+    }
+    let ok=await verify_user_signature(params.user,`/remove/${params.user}/${params.key}`,query.signature);
+    if (!ok) {
+      res.json({
+        success:false,
+        error:'Invalid signature'
+      });
+      return;
+    }
+    let test=await API.get(params.user,params.key);
+    try {
+      obj = await API.set(params.user,params.key,null,true);
     }
     catch(err) {
       console.error(err);
