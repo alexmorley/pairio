@@ -33,7 +33,7 @@ class PairioClient():
                   write_remote=None,
                   verbose=None
                  ):
-        if user is not None:
+        if user:
             if token is None:
                 raise Exception('Cannot set user without token.')
             self._config['user']=user
@@ -58,7 +58,7 @@ class PairioClient():
         if verbose is not None:
             self._verbose=verbose
 
-        if user is not None:
+        if user:
             test_string=_random_string(6)
             key={'test':'test-string'}
             try:
