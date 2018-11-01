@@ -7,7 +7,7 @@ const axios = require('axios');
 
 function PairioClient() {
 	let m_collections=[]; // default collections
-	let m_url='http://pairio.org:8080';
+	let m_url='https://pairio.org:10443';
 	let m_verbose=false;
 
 	this.setConfig=function(config) {

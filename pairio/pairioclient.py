@@ -12,7 +12,7 @@ class PairioClient():
             user='', # logged in user for setting remote pairs
             token='', # token for logged in user
             collections=[], # default remote collections to search for get()
-            url=os.getenv('PAIRIO_URL','http://pairio.org:8080'), # where the remote collections live
+            url=os.getenv('PAIRIO_URL','https://pairio.org:10443'), # where the remote collections live
             local_database_path=os.getenv('PAIRIO_DATABASE_DIR',_get_default_local_db_fname()), # for local pairs
             read_local=True, # whether to get locally by default
             write_local=True, # whether to set locally by default

@@ -1,6 +1,6 @@
 {
   "name": "pairio",
-  "version": "0.2.7",
+  "version": "0.3.0",
   "description": "Pairio server, python client, and javascript client",
   "main": "javascript/index.js",
   "scripts": {
