@@ -59,18 +59,20 @@ class PairioClient():
             self._verbose=verbose
 
         if user:
-            test_string=_random_string(6)
-            key={'test':'test-string'}
+            test_key='test.key.'+_random_string(6)
+            test_val='test.val.'+_random_string(6)
             try:
-                self.setRemote(key,test_string)
+                self.setRemote(test_key,test_val)
             except:
                 raise Exception('Error writing to remote pairio database.')
 
-            str2=self.getRemote(key,collection=user)
+            str2=self.getRemote(test_key,collection=user)
 
-            if str2!=test_string:
+            if str2!=test_val:
+                self.setRemote(test_key,None)
                 raise Exception('pairio test failed for user={}. {}<>{}'.format(user,str2,test_string))
             else:
+                self.setRemote(test_key,None)
                 print ('Pairio user set to {}. Test succeeded.'.format(user))
 
     def getConfig(self):
