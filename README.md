@@ -109,9 +109,14 @@ pa.setConfig(
 
 ## Hosting a pairio server
 
-You can host your own pairio server. The source code for the NodeJS server is found in the `pairioserver/` directory.
+You can host your own pairio server using npm, for example.
+```
+npm install
+PORT=8888 npm run server
+```
+The source code for the NodeJS server is found in the `pairioserver/` directory.
 
-TODO: finish this section.
+To use this server from a pairo client you need to set the `PAIRIO_URL` environment variable.
 
 See server API docs at the top of this file: https://github.com/magland/pairio/blob/master/pairioserver/pairioserver.js
 
